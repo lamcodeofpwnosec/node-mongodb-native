@@ -837,8 +837,8 @@ describe('Change Streams', function () {
             status === 'rejected'
               ? reason.message
               : value.operationType === 'insert'
-              ? `insert count = ${value.fullDocument.insertCount}`
-              : null;
+                ? `insert count = ${value.fullDocument.insertCount}`
+                : null;
           return `${status}:${res}`;
         });
 
@@ -865,8 +865,8 @@ describe('Change Streams', function () {
             status === 'rejected'
               ? reason.message
               : value.operationType === 'insert'
-              ? `insert count = ${value.fullDocument.insertCount}`
-              : null;
+                ? `insert count = ${value.fullDocument.insertCount}`
+                : null;
           return `${status}:${res}`;
         });
 
@@ -897,8 +897,8 @@ describe('Change Streams', function () {
             status === 'rejected'
               ? reason.message
               : value.operationType === 'insert'
-              ? `insert count = ${value.fullDocument.insertCount}`
-              : null;
+                ? `insert count = ${value.fullDocument.insertCount}`
+                : null;
           return `${status}:${res}`;
         });
 
