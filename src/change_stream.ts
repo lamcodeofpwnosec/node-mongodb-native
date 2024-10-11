@@ -616,7 +616,12 @@ export class ChangeStream<
   static readonly RESUME_TOKEN_CHANGED = RESUME_TOKEN_CHANGED;
 
   private timeoutContext?: TimeoutContext;
-  private symbol: symbol;
+  /**
+   * Note that this property is here to uniquely identify a ChangeStream instance as the owner of
+   * the {@link CursorTimeoutContext} instance (see {@link ChangeStream._createChangeStreamCursor}) to ensure
+   * that {@link AbstractCursor.close} does not mutate the timeoutContext.
+   */
+  private contextOwner: symbol;
   /**
    * @internal
    *
@@ -646,7 +651,7 @@ export class ChangeStream<
       );
     }
 
-    this.symbol = Symbol();
+    this.contextOwner = Symbol();
     this.parent = parent;
     this.namespace = parent.s.namespace;
     if (!this.options.readPreference && parent.readPreference) {
@@ -905,7 +910,7 @@ export class ChangeStream<
       {
         ...options,
         timeoutContext: this.timeoutContext
-          ? new CursorTimeoutContext(this.timeoutContext, this.symbol)
+          ? new CursorTimeoutContext(this.timeoutContext, this.contextOwner)
           : undefined
       }
     );
