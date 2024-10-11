@@ -500,7 +500,6 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
     responseType?: MongoDBResponseConstructor
   ) {
     const message = this.prepareCommand(ns.db, command, options);
-
     let started = 0;
     if (this.shouldEmitAndLogCommand) {
       started = now();
@@ -712,8 +711,9 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
       try {
         return await Promise.race([drainEvent, timeout]);
       } catch (error) {
+        let err = error;
         if (TimeoutError.is(error)) {
-          throw new MongoOperationTimeoutError('Timed out at socket write');
+          err = new MongoOperationTimeoutError('Timed out at socket write');
         }
         throw error;
       } finally {
@@ -748,6 +748,7 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
         }
       }
     } catch (readError) {
+      const err = readError;
       if (TimeoutError.is(readError)) {
         const error = new MongoOperationTimeoutError(
           `Timed out during socket read (${readError.duration}ms)`
@@ -756,7 +757,8 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
         this.onError(error);
         throw error;
       }
-      throw readError;
+      this.cleanup(err);
+      throw err;
     } finally {
       this.dataEvents = null;
       this.messageStream.pause();
