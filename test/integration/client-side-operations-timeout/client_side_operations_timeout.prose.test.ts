@@ -437,6 +437,8 @@ describe('CSOT spec prose tests', function () {
        * 1. Verify that an `aggregate` command and two `getMore` commands were executed against the `db.coll` collection during the test.
        */
       it('sends correct number of aggregate and getMores', metadata, async function () {
+        // NOTE: we don't check for a non-zero ID since we lazily send the initial aggregate to the
+        // server. See ChangeStreamCursor._initialize
         const changeStream = client
           .db('db')
           .collection('coll')
