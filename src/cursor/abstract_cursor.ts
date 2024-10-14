@@ -170,9 +170,11 @@ export abstract class AbstractCursor<
   private cursorClient: MongoClient;
   /** @internal */
   private transform?: (doc: TSchema) => any;
-  /** @internal
+  /** 
+   * @internal
    * This is true whether or not the first command fails. It only indicates whether or not the first
-   * command has been run. */
+   * command has been run. 
+   */
   private initialized: boolean;
   /** @internal */
   private isClosed: boolean;
