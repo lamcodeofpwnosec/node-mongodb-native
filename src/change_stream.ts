@@ -3,11 +3,7 @@ import type { Readable } from 'stream';
 import type { Binary, Document, Timestamp } from './bson';
 import { Collection } from './collection';
 import { CHANGE, CLOSE, END, ERROR, INIT, MORE, RESPONSE, RESUME_TOKEN_CHANGED } from './constants';
-import {
-  type AbstractCursorEvents,
-  type CursorStreamOptions,
-  CursorTimeoutContext
-} from './cursor/abstract_cursor';
+import { type CursorStreamOptions, CursorTimeoutContext } from './cursor/abstract_cursor';
 import { ChangeStreamCursor, type ChangeStreamCursorOptions } from './cursor/change_stream_cursor';
 import { Db } from './db';
 import {
@@ -544,7 +540,13 @@ export type ChangeStreamEvents<
   end(): void;
   error(error: Error): void;
   change(change: TChange): void;
-} & AbstractCursorEvents;
+  /**
+   * @remarks Note that the `close` event is currently emitted whenever the internal `ChangeStreamCursor`
+   * instance is closed, which can occur multiple times for a given `ChangeStream` instance.
+   * When this event is emitted is subject to change outside of major versions.
+   */
+  close(): void;
+};
 
 /**
  * Creates a new Change Stream instance. Normally created using {@link Collection#watch|Collection.watch()}.
