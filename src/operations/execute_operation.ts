@@ -58,11 +58,7 @@ type ResultTypeFromOperation<TOperation> =
 export async function executeOperation<
   T extends AbstractOperation<TResult>,
   TResult = ResultTypeFromOperation<T>
-<<<<<<< HEAD
 >(client: MongoClient, operation: T, timeoutContext?: TimeoutContext | null): Promise<TResult> {
-=======
->(client: MongoClient, operation: T, timeoutContext?: TimeoutContext): Promise<TResult> {
->>>>>>> e04694c3b (refactor(NODE-6187): refactor to use TimeoutContext abstraction (#4131))
   if (!(operation instanceof AbstractOperation)) {
     // TODO(NODE-3483): Extend MongoRuntimeError
     throw new MongoRuntimeError('This method requires a valid operation instance');
@@ -123,8 +119,7 @@ export async function executeOperation<
       topology,
       timeoutContext,
       session,
-      readPreference,
-      timeoutContext
+      readPreference
     });
   } finally {
     if (session?.owner != null && session.owner === owner) {
