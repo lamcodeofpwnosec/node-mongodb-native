@@ -972,6 +972,7 @@ describe('CSOT driver tests', metadata, () => {
 
         it('emits an error event', async function () {
           let [err] = await once(cs, 'error'); // getMore failure
+          expect(err).to.be.instanceof(MongoOperationTimeoutError);
           [err] = await once(cs, 'error'); // aggregate failure
           expect(err).to.be.instanceof(MongoOperationTimeoutError);
         });
