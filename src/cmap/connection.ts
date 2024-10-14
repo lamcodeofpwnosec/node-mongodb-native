@@ -714,6 +714,7 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
         let err = error;
         if (TimeoutError.is(error)) {
           err = new MongoOperationTimeoutError('Timed out at socket write');
+          this.cleanup(err);
         }
         throw error;
       } finally {
@@ -757,7 +758,6 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
         this.onError(error);
         throw error;
       }
-      this.cleanup(err);
       throw err;
     } finally {
       this.dataEvents = null;
