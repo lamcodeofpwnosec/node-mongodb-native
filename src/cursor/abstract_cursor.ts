@@ -481,10 +481,8 @@ export abstract class AbstractCursor<
     if (this.cursorId === Long.ZERO) {
       return false;
     }
-    const shouldRefresh =
-      this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null;
 
-    if (shouldRefresh) {
+    if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null) {
       this.timeoutContext?.refresh();
     }
     try {
@@ -495,7 +493,7 @@ export abstract class AbstractCursor<
         await this.fetchBatch();
       } while (!this.isDead || (this.documents?.length ?? 0) !== 0);
     } finally {
-      if (shouldRefresh) {
+      if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION) {
         this.timeoutContext?.clear();
       }
     }
@@ -508,10 +506,8 @@ export abstract class AbstractCursor<
     if (this.cursorId === Long.ZERO) {
       throw new MongoCursorExhaustedError();
     }
-    const shouldRefresh =
-      this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null;
 
-    if (shouldRefresh) {
+    if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null) {
       this.timeoutContext?.refresh();
     }
 
@@ -525,7 +521,7 @@ export abstract class AbstractCursor<
         await this.fetchBatch();
       } while (!this.isDead || (this.documents?.length ?? 0) !== 0);
     } finally {
-      if (shouldRefresh) {
+      if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION) {
         this.timeoutContext?.clear();
       }
     }
@@ -541,10 +537,7 @@ export abstract class AbstractCursor<
       throw new MongoCursorExhaustedError();
     }
 
-    const shouldRefresh =
-      this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null;
-
-    if (shouldRefresh) {
+    if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION && this.cursorId != null) {
       this.timeoutContext?.refresh();
     }
     try {
@@ -562,7 +555,7 @@ export abstract class AbstractCursor<
         return doc;
       }
     } finally {
-      if (shouldRefresh) {
+      if (this.cursorOptions.timeoutMode === CursorTimeoutMode.ITERATION) {
         this.timeoutContext?.clear();
       }
     }

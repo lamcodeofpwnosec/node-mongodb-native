@@ -82,12 +82,6 @@ export async function executeOperation<
     throw new MongoInvalidArgumentError('ClientSession must be from the same MongoClient');
   }
 
-  timeoutContext ??= TimeoutContext.create({
-    serverSelectionTimeoutMS: client.s.options.serverSelectionTimeoutMS,
-    waitQueueTimeoutMS: client.s.options.waitQueueTimeoutMS,
-    timeoutMS: operation.options.timeoutMS
-  });
-
   const readPreference = operation.readPreference ?? ReadPreference.primary;
   const inTransaction = !!session?.inTransaction();
 
