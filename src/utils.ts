@@ -569,6 +569,14 @@ export function resolveOptions<T extends CommandOperationOptions>(
   }
 
   result.timeoutMS = options?.timeoutMS ?? parent?.timeoutMS;
+  if (result.timeoutMS != null && result.writeConcern) {
+    const matchOptions = new Set(['wtimeout', 'wtimeoutMS']);
+    console.log(result.writeConcern);
+    const writeConcernKeys = Object.keys(result.writeConcern);
+    if (writeConcernKeys.length <= 2 && writeConcernKeys.every(k => matchOptions.has(k))) {
+      delete result.writeConcern;
+    }
+  }
 
   return result;
 }

@@ -1209,6 +1209,7 @@ export const OPTIONS = {
     }
   } as OptionDescriptor,
   wtimeoutMS: {
+    deprecated: 'Please use timeoutMS instead',
     target: 'writeConcern',
     transform({ values: [value], options }) {
       const wc = WriteConcern.fromOptions({
