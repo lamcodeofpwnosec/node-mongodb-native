@@ -555,18 +555,13 @@ export function resolveOptions<T extends CommandOperationOptions>(
     let writeConcern = WriteConcern.fromOptions(options) ?? parent?.writeConcern;
     if (writeConcern) {
       if (timeoutMS != null) {
-        result.writeConcern = writeConcern;
-      } else {
-        const matchOptions = new Set(['wtimeout', 'wtimeoutMS']);
-        const writeConcernKeys = Object.keys(writeConcern);
-        if (writeConcernKeys.length > 2 && writeConcernKeys.some(k => !matchOptions.has(k))) {
-          writeConcern = WriteConcern.fromOptions({
-            ...writeConcern,
-            wtimeout: undefined,
-            wtimeoutMS: undefined
-          });
-        }
+        writeConcern = WriteConcern.fromOptions({
+          ...writeConcern,
+          wtimeout: undefined,
+          wtimeoutMS: undefined
+        });
       }
+      result.writeConcern = writeConcern;
     }
   }
 
