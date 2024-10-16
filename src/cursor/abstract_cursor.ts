@@ -294,15 +294,6 @@ export abstract class AbstractCursor<
       }
     };
 
-    if (
-      options.timeoutContext != null &&
-      options.timeoutMS != null &&
-      this.cursorOptions.timeoutMode !== CursorTimeoutMode.LIFETIME
-    ) {
-      throw new MongoAPIError(
-        `cannot create a cursor with an externally provided timeout context that doesn't use timeoutMode=CURSOR_LIFETIME.`
-      );
-    }
     this.timeoutContext = options.timeoutContext;
   }
 
@@ -1135,7 +1126,7 @@ export class CursorTimeoutContext extends TimeoutContext {
     return this.timeoutContext.csotEnabled();
   }
   override refresh(): void {
-    return this.timeoutContext.refresh();
+    if (typeof this.owner !== 'symbol') return this.timeoutContext.refresh();
   }
   override clear(): void {
     return this.timeoutContext.clear();

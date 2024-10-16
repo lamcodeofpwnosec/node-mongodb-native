@@ -21,7 +21,7 @@ import type { CollationOptions, OperationParent } from './operations/command';
 import type { ReadPreference } from './read_preference';
 import { type AsyncDisposable, configureResourceManagement } from './resource_management';
 import type { ServerSessionId } from './sessions';
-import { type TimeoutContext } from './timeout';
+import { CSOTTimeoutContext, type TimeoutContext } from './timeout';
 import { filterOptions, getTopology, type MongoDBNamespace, squashError } from './utils';
 
 /** @internal */
@@ -639,14 +639,18 @@ export class ChangeStream<
 
     this.pipeline = pipeline;
     this.options = { ...options };
+    let serverSelectionTimeoutMS: number;
     delete this.options.writeConcern;
 
     if (parent instanceof Collection) {
       this.type = CHANGE_DOMAIN_TYPES.COLLECTION;
+      serverSelectionTimeoutMS = parent.s.db.client.options.serverSelectionTimeoutMS;
     } else if (parent instanceof Db) {
       this.type = CHANGE_DOMAIN_TYPES.DATABASE;
+      serverSelectionTimeoutMS = parent.client.options.serverSelectionTimeoutMS;
     } else if (parent instanceof MongoClient) {
       this.type = CHANGE_DOMAIN_TYPES.CLUSTER;
+      serverSelectionTimeoutMS = parent.options.serverSelectionTimeoutMS;
     } else {
       throw new MongoChangeStreamError(
         'Parent provided to ChangeStream constructor must be an instance of Collection, Db, or MongoClient'
@@ -678,6 +682,13 @@ export class ChangeStream<
         this[kCursorStream]?.removeAllListeners('data');
       }
     });
+
+    if (this.options.timeoutMS != null) {
+      this.timeoutContext = new CSOTTimeoutContext({
+        timeoutMS: this.options.timeoutMS,
+        serverSelectionTimeoutMS
+      });
+    }
   }
 
   /** @internal */
@@ -941,14 +952,11 @@ export class ChangeStream<
     const stream = this[kCursorStream] ?? cursor.stream();
     this[kCursorStream] = stream;
     stream.on('data', change => {
-      this.timeoutContext?.refresh();
       try {
         const processedChange = this._processChange(change);
         this.emit(ChangeStream.CHANGE, processedChange);
       } catch (error) {
         this.emit(ChangeStream.ERROR, error);
-      } finally {
-        this.timeoutContext?.clear();
       }
     });
     stream.on('error', error => this._processErrorStreamMode(error, this.cursor.id != null));
@@ -1033,27 +1041,28 @@ export class ChangeStream<
     }
 
     if (
-      !cursorInitialized ||
-      (!isResumableError(changeStreamError, this.cursor.maxWireVersion) &&
-        !(changeStreamError instanceof MongoOperationTimeoutError))
+      cursorInitialized &&
+      (isResumableError(changeStreamError, this.cursor.maxWireVersion) ||
+        changeStreamError instanceof MongoOperationTimeoutError)
     ) {
+      try {
+        await this.cursor.close();
+      } catch (error) {
+        squashError(error);
+      }
+
+      await this._resume(changeStreamError);
+
+      if (changeStreamError instanceof MongoOperationTimeoutError) throw changeStreamError;
+    } else {
       try {
         await this.close();
       } catch (error) {
         squashError(error);
       }
+
       throw changeStreamError;
     }
-
-    try {
-      await this.cursor.close();
-    } catch (error) {
-      squashError(error);
-    }
-
-    await this._resume(changeStreamError);
-
-    if (changeStreamError instanceof MongoOperationTimeoutError) throw changeStreamError;
   }
 
   private async _resume(changeStreamError: AnyError) {
