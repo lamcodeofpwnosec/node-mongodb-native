@@ -1129,7 +1129,7 @@ export class CursorTimeoutContext extends TimeoutContext {
     if (typeof this.owner !== 'symbol') return this.timeoutContext.refresh();
   }
   override clear(): void {
-    return this.timeoutContext.clear();
+    if (typeof this.owner !== 'symbol') return this.timeoutContext.clear();
   }
   override get maxTimeMS(): number | null {
     return this.timeoutContext.maxTimeMS;
