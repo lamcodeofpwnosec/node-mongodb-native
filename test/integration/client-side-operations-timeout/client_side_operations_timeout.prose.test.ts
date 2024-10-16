@@ -443,6 +443,10 @@ describe('CSOT spec prose tests', function () {
           .db('db')
           .collection('coll')
           .watch([], { timeoutMS: 120, maxAwaitTimeMS: 10 });
+
+        // @ts-expect-error private method
+        await changeStream.cursor.cursorInit();
+
         const maybeError = await changeStream.next().then(
           () => null,
           e => e
